@@ -1,6 +1,9 @@
 import { useState, useEffect, createContext } from 'react';
 import clienteAxios from '../config/clienteAxios';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
+
+let socket;
 
 const ProyectosContext = createContext();
 
@@ -15,6 +18,7 @@ const ProyectosPrvider = ({ children }) => {
     const [modalEliminarTarea, setModalEliminarTarea] = useState(false);
     const [colaborador, setColaborador] = useState({});
     const [modalEliminarColaborador, setModalEliminarColaborador] = useState(false);
+    const [buscador, setBuscador] = useState(false);
 
     const navigate = useNavigate();
 
@@ -38,6 +42,11 @@ const ProyectosPrvider = ({ children }) => {
         }
         obtenerProyectos();
     }, []);
+
+    useEffect(() => {
+        //Abre conexión con socket.io
+        socket = io(import.meta.env.VITE_BACKEND_URL);
+    }, [])
 
     const mostrarAlerta = (alerta) => {
         setAlerta(alerta);
@@ -112,7 +121,6 @@ const ProyectosPrvider = ({ children }) => {
         }
     }
 
-
     const obtenerProyecto = async id => {
         setCargando(true);
         try {
@@ -127,10 +135,15 @@ const ProyectosPrvider = ({ children }) => {
             }
             const { data } = await clienteAxios(`/proyectos/${id}`, config);
             setProyecto(data);
+            setAlerta({});
         } catch (error) {
-            console.log(error)
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            });
+        } finally {
+            setCargando(false);
         }
-        setCargando(false);
     }
 
     const eliminarProyecto = async id => {
@@ -186,15 +199,18 @@ const ProyectosPrvider = ({ children }) => {
                 }
             }
             const { data } = await clienteAxios.post('/tareas', tarea, config);
-            let proyectoActualizado = { ...proyecto };
-            proyectoActualizado.tareas = [...proyectoActualizado.tareas, data];
 
-            setProyecto(proyectoActualizado);
             handleModalTarea();
             setAlerta({});
 
+            // Socket.io
+            socket.emit('nueva tarea', data);
         } catch (error) {
-            console.log(error);
+            handleModalTarea();
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            });
         }
     }
 
@@ -210,13 +226,18 @@ const ProyectosPrvider = ({ children }) => {
                 }
             }
             const { data } = await clienteAxios.put(`/tareas/${tarea._id}`, tarea, config);
-            const proyectoActualizado = { ...proyecto };
-            proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id !== data._id ? tareaState : data);
-            setProyecto(proyectoActualizado);
+  
             setModalFormularioTarea(false);
             setAlerta({});
+
+            // Socket io
+            socket.emit('editar tarea', data);
         } catch (error) {
-            console.log(error);
+            handleModalTarea();
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            });
         }
     }
 
@@ -242,17 +263,24 @@ const ProyectosPrvider = ({ children }) => {
                 }
             }
             const { data } = await clienteAxios.delete(`/tareas/${tarea._id}`, config);
-            const proyectoActualizado = { ...proyecto };
-            proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaState => tareaState._id !== tarea._id);
-            setProyecto(proyectoActualizado);
+     
             mostrarAlerta({
                 msg: data.msg,
                 error: false
             });
             setModalEliminarTarea(false);
+            
+            // Socket io
+            socket.emit('eliminar tarea', tarea);
+
             setTarea({});
         } catch (error) {
-            console.log(error);
+            setModalEliminarTarea(false);
+            mostrarAlerta({
+                msg: error.response.data.msg,
+                error: true
+            });
+            setTarea({});
         }
     }
 
@@ -323,9 +351,9 @@ const ProyectosPrvider = ({ children }) => {
                     Authorization: `Bearer ${token}`
                 }
             }
-            const { data } = await clienteAxios.post(`/proyectos/eliminar-colaborador/${proyecto._id}`, {id: colaborador._id}, config);
+            const { data } = await clienteAxios.post(`/proyectos/eliminar-colaborador/${proyecto._id}`, { id: colaborador._id }, config);
 
-            const proyectoActualizado = {...proyecto};
+            const proyectoActualizado = { ...proyecto };
             proyectoActualizado.colaboradores = proyectoActualizado.colaboradores.filter(colaboradorState => colaboradorState._id !== colaborador._id);
             setProyecto(proyectoActualizado);
             setModalEliminarColaborador(false);
@@ -337,6 +365,58 @@ const ProyectosPrvider = ({ children }) => {
         } catch (error) {
             console.log(error)
         }
+    }
+
+    const completarTarea = async id => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return
+
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await clienteAxios.post(`/tareas/estado/${id}`, {}, config);
+            setTarea({});
+            setAlerta({});
+  
+            // Socket io
+            socket.emit('cambiar estado', data);
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+
+    const handleBuscador = () => {
+        setBuscador(!buscador);
+    }
+
+    // Socket io
+    const submitTareasProyecto = tarea => {
+        // Agregar Tarea al State
+        let proyectoActualizado = { ...proyecto };
+        proyectoActualizado.tareas = [...proyectoActualizado.tareas, tarea];
+        setProyecto(proyectoActualizado);
+    }
+
+    const eliminarTareaProyecto = tarea => {
+        const proyectoActualizado = { ...proyecto };
+        proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaState => tareaState._id !== tarea._id);
+        setProyecto(proyectoActualizado);
+    }
+
+    const editarTareaProyecto = tarea => {
+        const proyectoActualizado = { ...proyecto };
+        proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id !== tarea._id ? tareaState : tarea);
+        setProyecto(proyectoActualizado);
+    }
+
+    const completarTareaProyecto = tarea => {
+        const proyectoActualizado = { ...proyecto };
+        proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id !== tarea._id ? tareaState : tarea);
+        setProyecto(proyectoActualizado);
     }
 
     return (
@@ -364,7 +444,14 @@ const ProyectosPrvider = ({ children }) => {
                 agregarColaborador,
                 modalEliminarColaborador,
                 handleModalEliminarColaborador,
-                eliminarColaborador
+                eliminarColaborador,
+                completarTarea,
+                buscador,
+                handleBuscador,
+                submitTareasProyecto,
+                eliminarTareaProyecto,
+                editarTareaProyecto,
+                completarTareaProyecto
             }}
         >
             {children}
