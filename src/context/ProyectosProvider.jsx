@@ -2,6 +2,7 @@ import { useState, useEffect, createContext } from 'react';
 import clienteAxios from '../config/clienteAxios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import useAuth from '../hooks/useAuth';
 
 let socket;
 
@@ -21,6 +22,7 @@ const ProyectosPrvider = ({ children }) => {
     const [buscador, setBuscador] = useState(false);
 
     const navigate = useNavigate();
+    const { auth } = useAuth();
 
     useEffect(() => {
         const obtenerProyectos = async () => {
@@ -41,7 +43,7 @@ const ProyectosPrvider = ({ children }) => {
             }
         }
         obtenerProyectos();
-    }, []);
+    }, [auth]);
 
     useEffect(() => {
         //Abre conexión con socket.io
@@ -226,7 +228,7 @@ const ProyectosPrvider = ({ children }) => {
                 }
             }
             const { data } = await clienteAxios.put(`/tareas/${tarea._id}`, tarea, config);
-  
+
             setModalFormularioTarea(false);
             setAlerta({});
 
@@ -263,13 +265,13 @@ const ProyectosPrvider = ({ children }) => {
                 }
             }
             const { data } = await clienteAxios.delete(`/tareas/${tarea._id}`, config);
-     
+
             mostrarAlerta({
                 msg: data.msg,
                 error: false
             });
             setModalEliminarTarea(false);
-            
+
             // Socket io
             socket.emit('eliminar tarea', tarea);
 
@@ -381,7 +383,7 @@ const ProyectosPrvider = ({ children }) => {
             const { data } = await clienteAxios.post(`/tareas/estado/${id}`, {}, config);
             setTarea({});
             setAlerta({});
-  
+
             // Socket io
             socket.emit('cambiar estado', data);
         } catch (error) {
@@ -419,6 +421,12 @@ const ProyectosPrvider = ({ children }) => {
         setProyecto(proyectoActualizado);
     }
 
+    const cerrarSesionProyecto = () => {
+        setProyectos([]);
+        setProyecto({});
+        setAlerta({});
+    }
+
     return (
         <ProyectosContext.Provider
             value={{
@@ -451,7 +459,8 @@ const ProyectosPrvider = ({ children }) => {
                 submitTareasProyecto,
                 eliminarTareaProyecto,
                 editarTareaProyecto,
-                completarTareaProyecto
+                completarTareaProyecto,
+                cerrarSesionProyecto
             }}
         >
             {children}
