@@ -10,8 +10,6 @@ import Colaborador from '../components/Colaborador';
 import ModalEliminarColaborador from '../components/ModalEliminarColaborador';
 import TemplateProyecto from '../components/TemplateProyecto';
 import { io } from 'socket.io-client';
-import { toast } from 'react-toastify';
-
 
 let socket;
 
@@ -46,7 +44,6 @@ const Proyecto = () => {
     socket.on('tarea eliminada', tareaEliminada => {
       if (tareaEliminada.proyecto === proyecto._id) {
         eliminarTareaProyecto(tareaEliminada);
-        toast.info('Otro usuario elimino una terea');
       }
     });
     socket.on('tarea modificada', tareaModificada => {
@@ -57,7 +54,6 @@ const Proyecto = () => {
     socket.on('estado modificado', nuevoEstadoTarea => {
       if (nuevoEstadoTarea.proyecto._id === proyecto._id) {
         completarTareaProyecto(nuevoEstadoTarea);
-        toast.info('Otro usuario modifico el estado de una terea');
       }
     })
   })

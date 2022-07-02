@@ -3,7 +3,6 @@ import clienteAxios from '../config/clienteAxios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import useAuth from '../hooks/useAuth';
-import { toast } from 'react-toastify';
 
 let socket;
 
