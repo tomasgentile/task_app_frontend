@@ -4,6 +4,6 @@ Este proyecto fue realizado dentro del curso "React - La Guia completa: Hooks Co
 https://tourmaline-caramel-94436b.netlify.app
 
 Tecnologías utilizadas:
-React 
-Tailwind CSS
-Socket io
+- React 
+- Tailwind CSS
+- Socket io
