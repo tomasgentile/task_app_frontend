@@ -3,6 +3,7 @@ import clienteAxios from '../config/clienteAxios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import useAuth from '../hooks/useAuth';
+import { toast } from 'react-toastify';
 
 let socket;
 
@@ -12,7 +13,7 @@ const ProyectosPrvider = ({ children }) => {
     const [proyectos, setProyectos] = useState({});
     const [alerta, setAlerta] = useState({});
     const [proyecto, setProyecto] = useState({});
-    const [ocultaForm, setOcultaForm] = useState(true);
+    const [ocultaForm, setOcultaForm] = useState(false);
     const [cargando, setCargando] = useState(false);
     const [modalFormularioTarea, setModalFormularioTarea] = useState(false);
     const [tarea, setTarea] = useState({});
@@ -26,6 +27,7 @@ const ProyectosPrvider = ({ children }) => {
 
     useEffect(() => {
         const obtenerProyectos = async () => {
+            setCargando(true);
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return
@@ -43,6 +45,7 @@ const ProyectosPrvider = ({ children }) => {
             }
         }
         obtenerProyectos();
+        setCargando(false);
     }, [auth]);
 
     useEffect(() => {
@@ -55,7 +58,7 @@ const ProyectosPrvider = ({ children }) => {
 
         setTimeout(() => {
             setAlerta({})
-        }, 3000);
+        }, 2500);
     }
 
     const submitProyecto = async (proyecto) => {
@@ -84,7 +87,7 @@ const ProyectosPrvider = ({ children }) => {
                 msg: 'Proyecto Modificado Correctamente',
                 error: false
             });
-            setOcultaForm(false);
+            setOcultaForm(true);
 
             setTimeout(() => {
                 navigate('/proyectos');
@@ -112,7 +115,7 @@ const ProyectosPrvider = ({ children }) => {
                 msg: 'Proyecto Creado Correctamente',
                 error: false
             });
-            setOcultaForm(false);
+            setOcultaForm(true);
 
             setTimeout(() => {
                 navigate('/proyectos');
@@ -166,7 +169,7 @@ const ProyectosPrvider = ({ children }) => {
                 msg: data.msg,
                 error: false
             });
-            setOcultaForm(false);
+            setOcultaForm(true);
 
             setTimeout(() => {
                 navigate('/proyectos');
@@ -435,6 +438,7 @@ const ProyectosPrvider = ({ children }) => {
                 mostrarAlerta,
                 submitProyecto,
                 ocultaForm,
+                setOcultaForm,
                 obtenerProyecto,
                 proyecto,
                 cargando,

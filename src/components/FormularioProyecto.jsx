@@ -10,7 +10,7 @@ const FormularioProyecto = () => {
     const [cliente, setCliente] = useState('');
     const [id, setId] = useState(null);
 
-    const { mostrarAlerta, alerta, submitProyecto, ocultaForm, proyecto } = useProyectos();
+    const { mostrarAlerta, alerta, submitProyecto, ocultaForm, setOcultaForm, proyecto } = useProyectos();
     const params = useParams();
     
     useEffect(() => {
@@ -22,6 +22,7 @@ const FormularioProyecto = () => {
             setFechaEntrega(proyecto.fechaEntrega?.split('T')[0]);
             setCliente(proyecto.cliente);
         }
+        setOcultaForm(false);
     }, [params]);
 
     const handleSubmit = async e => {
@@ -53,7 +54,7 @@ const FormularioProyecto = () => {
             onSubmit={handleSubmit}
         >
             {msg && <Alerta alerta={alerta} />}
-            {ocultaForm && (
+            {!ocultaForm && (
                 <>
                     <div className='mb-5'>
                         <label
@@ -117,7 +118,6 @@ const FormularioProyecto = () => {
                     />
                 </>
             )}
-
         </form>
     )
 }

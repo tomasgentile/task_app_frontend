@@ -4,7 +4,7 @@ import useProyectos from "../hooks/useProyectos";
 import Busqueda from "./Busqueda";
 
 const Header = () => {
-    const { handleBuscador, cerrarSesionProyecto } = useProyectos();
+    const { handleBuscador, cerrarSesionProyecto, setProyecto } = useProyectos();
     const { cerrarSesionAuth } = useAuth();
 
     const handleCerrarSesion = () => {
