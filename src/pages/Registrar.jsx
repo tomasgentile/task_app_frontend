@@ -17,7 +17,7 @@ const Registrar = () => {
         msg: 'Todos los campos son obligatorios',
         error: true
       })
-      return
+      return;
     }
 
     if (password !== repetirPassword) {
@@ -25,6 +25,7 @@ const Registrar = () => {
         msg: 'Los password ingresados no son iguales',
         error: true
       })
+      return;
     }
 
     if (password.length < 6) {
@@ -32,6 +33,7 @@ const Registrar = () => {
         msg: 'El Password debe tener al menos 6 caracteres',
         error: true
       })
+      return;
     }
 
     setAlerta({});
@@ -61,13 +63,17 @@ const Registrar = () => {
 
   return (
     <>
-      <h1 className='text-sky-600 font-black text-5xl capitalize'>Crea tu cuenta y Administra tus <span className='text-slate-700'>proyectos</span></h1>
+      <h1
+        className='text-sky-600 font-black text-5xl capitalize'
+        data-cy='titulo-registrar'
+      >Crea tu cuenta y Administra tus <span className='text-slate-700'>proyectos</span></h1>
 
       {msg && <Alerta alerta={alerta} />}
 
       <form
         className='my-10 bg-white shadow rounded-lg px-10 py-10'
         onSubmit={handleSubmit}
+        data-cy='form-registrar'
       >
         <div className='my-5'>
           <label
@@ -81,6 +87,7 @@ const Registrar = () => {
             className='w-full mt-3 p-3 border rounded-xl bg-gray-50'
             value={nombre}
             onChange={e => setNombre(e.target.value)}
+            data-cy='nombre-input'
           />
         </div>
         <div className='my-5'>
@@ -95,6 +102,7 @@ const Registrar = () => {
             className='w-full mt-3 p-3 border rounded-xl bg-gray-50'
             value={email}
             onChange={e => setEmail(e.target.value)}
+            data-cy='email-input'
           />
         </div>
         <div className='my-5'>
@@ -109,6 +117,7 @@ const Registrar = () => {
             className='w-full mt-3 p-3 border rounded-xl bg-gray-50'
             value={password}
             onChange={e => setPassword(e.target.value)}
+            data-cy='password-input'
           />
         </div>
         <div className='my-5'>
@@ -123,18 +132,21 @@ const Registrar = () => {
             className='w-full mt-3 p-3 border rounded-xl bg-gray-50'
             value={repetirPassword}
             onChange={e => setRepetirPassword(e.target.value)}
+            data-cy='password2-input'
           />
         </div>
         <input
           type='submit'
           value='Crear Cuenta'
           className='bg-sky-700 w-full py-3 text-white uppercase font-bold rounded hover:cursor-pointer hover:bg-sky-800 transition-colors'
+          data-cy='submit-registrar'
         />
       </form>
       <nav className='lg:flex lg:justify-between'>
         <Link
           className='block text-center my-5 text-slate-500 uppercase text-sm'
           to='/'
+          data-cy='link-login'
         >¿Ya tienes una cuenta? Inicia Sesión</Link>
         <Link
           className='block text-center my-5 text-slate-500 uppercase text-sm'
