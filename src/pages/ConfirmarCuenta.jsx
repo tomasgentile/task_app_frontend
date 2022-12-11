@@ -13,9 +13,7 @@ const ConfirmarCuenta = () => {
     const confirmarCuenta = async () => {
       try {
         const url = `/usuarios/confirmar/${id}`;
-        console.log(url);
         const { data } = await clienteAxios(url);
-        console.log(data)
 
         setAlerta({
           msg: data.msg,
@@ -53,4 +51,4 @@ const ConfirmarCuenta = () => {
   )
 }
 
-export default ConfirmarCuenta
+export default ConfirmarCuenta;

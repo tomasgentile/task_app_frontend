@@ -32,11 +32,10 @@ const Login = () => {
       // Almacena Token en Localstorage
       localStorage.setItem('token', data.token);
     } catch (error) {
-      console.log(error)
       setAlerta({
         msg: error.response.data.msg,
         error: true
-      })
+      });
     }
   }
 
